@@ -1,16 +1,26 @@
 package controller
 
 import (
-	"fmt"
-	"login-otp/totp"
+	"login-otp/service"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
-const otpDigits int = 6
+func ValidateOTP(c *gin.Context) {
+	secret := c.Query("secret")
+	otp := c.Query("otp")
 
-func ValidateOTP(secret string, otp string) bool {
-	onTimeotp := totp.New([]byte(secret), otpDigits, 0)
-	fmt.Println(onTimeotp)
-	beforeOtp := totp.New([]byte(secret), otpDigits, -1)
-	fmt.Println(beforeOtp)
-	return otp == onTimeotp || otp == beforeOtp
+	res := service.ValidateOTP(secret, otp)
+	if res {
+		ResultWrite := "true"
+		c.JSON(http.StatusOK, gin.H{
+			"result":ResultWrite,
+		})
+	}else if !res {
+		ResultWrite := "false"
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"result":ResultWrite,
+		})
+	}
 }
